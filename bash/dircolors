@@ -1,0 +1,90 @@
+# Solarized Dark dircolors — ANSI codes, so they follow the terminal's Solarized scheme
+# (bright black = base01 grey, bright red = orange, bright magenta = violet)
+NORMAL 00
+FILE 00
+RESET 0
+DIR 01;34
+LINK 01;36
+MULTIHARDLINK 00
+FIFO 40;33
+SOCK 01;35
+DOOR 01;35
+BLK 40;33;01
+CHR 40;33;01
+ORPHAN 40;31;01
+MISSING 40;31;01
+SETUID 37;41
+SETGID 30;43
+CAPABILITY 30;41
+STICKY_OTHER_WRITABLE 30;42
+OTHER_WRITABLE 34;42
+STICKY 37;44
+EXEC 01;32
+# archives — orange
+.tar 00;91
+.tgz 00;91
+.gz 00;91
+.bz2 00;91
+.xz 00;91
+.zst 00;91
+.zip 00;91
+.7z 00;91
+.rar 00;91
+.deb 00;91
+.rpm 00;91
+.jar 00;91
+.iso 00;91
+# images — magenta
+.jpg 00;35
+.jpeg 00;35
+.png 00;35
+.gif 00;35
+.bmp 00;35
+.svg 00;35
+.webp 00;35
+.ico 00;35
+# video — violet
+.mp4 00;95
+.mkv 00;95
+.webm 00;95
+.mov 00;95
+.avi 00;95
+# audio — cyan
+.mp3 00;36
+.flac 00;36
+.wav 00;36
+.ogg 00;36
+.m4a 00;36
+# docs — yellow
+.md 00;33
+.txt 00;33
+.pdf 00;33
+.doc 00;33
+.docx 00;33
+.xls 00;33
+.xlsx 00;33
+.ppt 00;33
+.pptx 00;33
+.csv 00;33
+# config / data — base1
+.json 00;37
+.yaml 00;37
+.yml 00;37
+.toml 00;37
+.ini 00;37
+.conf 00;37
+.env 00;37
+# Windows executables — green
+.exe 00;32
+.bat 00;32
+.cmd 00;32
+.ps1 00;32
+# backups / temp / logs — base01 grey
+*~ 00;90
+.bak 00;90
+.old 00;90
+.orig 00;90
+.swp 00;90
+.tmp 00;90
+.log 00;90
+.lock 00;90

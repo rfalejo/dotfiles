@@ -1,0 +1,17 @@
+# Backups created by install.sh
+*.pre-dotfiles.*
+*.bak-*
+
+# Never commit secrets or machine-local state
+.env
+*.env
+*.pem
+*.key
+id_*
+.claude/settings.local.json
+
+# Editor / OS noise
+*~
+*.swp
+.DS_Store
+Thumbs.db
