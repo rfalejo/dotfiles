@@ -9,6 +9,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 PACKAGES=(tmux fzf bat eza zoxide tree jq git vim)
+LINUX_DESKTOP_PACKAGES=(wl-clipboard xclip xdg-utils)
 
 print_usage() {
     cat <<EOF
@@ -17,7 +18,7 @@ Usage: $0 [options]
 With no options, links configs and updates ~/.bashrc and Claude Code settings.
 
 Options:
-  --packages          Also apt-install: ${PACKAGES[*]}
+  --packages          Also apt-install: ${PACKAGES[*]} (plus Linux desktop clipboard tools)
   --windows-terminal  Also add the Solarized scheme to Windows Terminal and apply it to this distro
   --all               Everything above
   -h, --help          Show this message
@@ -57,6 +58,7 @@ link_configs() {
     link bash/rice.sh                 "$HOME/.config/bash/rice.sh"
     link bash/dircolors               "$HOME/.dircolors"
     link tmux/tmux.conf               "$HOME/.tmux.conf"
+    link tmux/copy.sh                  "$HOME/.config/tmux/copy.sh"
     link claude/statusline-command.sh "$HOME/.claude/statusline-command.sh"
 }
 
@@ -100,9 +102,13 @@ EOF
 }
 
 install_packages() {
-    log_info "Installing packages: ${PACKAGES[*]}"
+    local packages=("${PACKAGES[@]}")
+    if [ -z "${WSL_DISTRO_NAME:-}" ]; then
+        packages+=("${LINUX_DESKTOP_PACKAGES[@]}")
+    fi
+    log_info "Installing packages: ${packages[*]}"
     sudo apt-get update -qq
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${PACKAGES[@]}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${packages[@]}"
 }
 
 configure_windows_terminal() {

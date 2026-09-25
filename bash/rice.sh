@@ -1,4 +1,4 @@
-# ~/.config/bash/rice.sh — Solarized Dark bash setup for WSL + Windows Terminal + tmux
+# ~/.config/bash/rice.sh — Solarized Dark bash setup for Linux, WSL, and tmux
 # Sourced from ~/.bashrc. Optional tools (fzf, bat, eza, zoxide) are used when installed.
 
 # ── Solarized palette (24-bit) ────────────────────────────────────
@@ -186,6 +186,9 @@ if [[ -n $WSL_DISTRO_NAME ]]; then
   e() { explorer.exe "$(wslpath -w "${1:-.}")"; true; }
   # copy file contents to the Windows clipboard
   copy() { if [[ -n $1 ]]; then clip.exe < "$1"; else clip.exe; fi; }
+elif command -v xdg-open >/dev/null; then
+  alias open='xdg-open'
+  e() { xdg-open "${1:-.}"; }
 fi
 
 # ── Optional modern tools (installed via apt) ─────────────────────
