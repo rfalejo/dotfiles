@@ -11,6 +11,7 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 PACKAGES=(tmux fzf bat eza zoxide tree jq git vim)
 LINUX_DESKTOP_PACKAGES=(wl-clipboard xclip xdg-utils)
 XFCE_PACKAGES=(greybird-gtk-theme papirus-icon-theme fonts-cascadia-code python3-pil rofi)
+XFCE_APPS=(drawing celluloid xfce4-notes-plugin)   # Paint, media player, sticky notes
 XFCE_THEME=Greybird-Solarized-Dark
 
 print_usage() {
@@ -21,7 +22,7 @@ With no options, links configs and updates ~/.bashrc and Claude Code settings.
 
 Options:
   --packages          Also apt-install: ${PACKAGES[*]} (plus Linux desktop clipboard tools,
-                      and the XFCE theme dependencies on XFCE)
+                      and the XFCE theme dependencies and desktop apps on XFCE)
   --windows-terminal  Also add the Solarized scheme to Windows Terminal and apply it to this distro
   --xfce              Also build and apply the Solarized Dark XFCE theme and terminal colors
   --login-screen      Also theme the LightDM GTK greeter to match (uses sudo)
@@ -112,7 +113,7 @@ install_packages() {
         packages+=("${LINUX_DESKTOP_PACKAGES[@]}")
     fi
     if command -v xfconf-query >/dev/null; then
-        packages+=("${XFCE_PACKAGES[@]}")
+        packages+=("${XFCE_PACKAGES[@]}" "${XFCE_APPS[@]}")
     fi
     log_info "Installing packages: ${packages[*]}"
     sudo apt-get update -qq
@@ -273,6 +274,31 @@ EOF
         xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r/startup-notify" -r 2>/dev/null || true
     else
         log_warn "rofi not installed (see --packages); keeping the Super+R run dialog"
+    fi
+
+    # Mousepad: GtkSourceView's Solarized Dark with the darkened backgrounds, system monospace font
+    local styles="$HOME/.local/share/gtksourceview-4/styles"
+    if [ -f /usr/share/gtksourceview-4/styles/solarized-dark.xml ]; then
+        mkdir -p "$styles"
+        sed -e 's/id="solarized-dark"/id="solarized-dark-dotfiles"/' \
+            -e 's/_name="Solarized Dark"/_name="Solarized Dark (dotfiles)"/' \
+            -e 's/#002B36/#070D15/Ig; s/#073642/#0F1B29/Ig; s/#032F3B/#0B1520/Ig' \
+            /usr/share/gtksourceview-4/styles/solarized-dark.xml > "$styles/solarized-dark-dotfiles.xml"
+        if gsettings list-schemas | grep -qx org.xfce.mousepad.preferences.view; then
+            local view=org.xfce.mousepad.preferences.view
+            gsettings set $view color-scheme solarized-dark-dotfiles
+            gsettings set $view use-default-monospace-font true
+            gsettings set $view show-line-numbers true
+            gsettings set $view highlight-current-line true
+        fi
+    fi
+
+    # Celluloid as the default video player
+    local celluloid=io.github.celluloid_player.Celluloid.desktop mime
+    if [ -f "/usr/share/applications/$celluloid" ]; then
+        for mime in $(sed -n 's/^MimeType=//p' "/usr/share/applications/$celluloid" | tr ';' '\n' | grep '^video/'); do
+            xdg-mime default "$celluloid" "$mime"
+        done
     fi
 
     log_info "Applied $XFCE_THEME to XFCE and xfce4-terminal"
