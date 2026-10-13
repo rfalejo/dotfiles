@@ -205,6 +205,23 @@ configure_xfce() {
         gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null || true
     fi
 
+    # Wallpaper on every monitor and workspace, existing or not yet configured
+    local wallpaper="$HOME/.local/share/backgrounds/solarized-dusk.png"
+    python3 "$DOTFILES_DIR/xfce/wallpaper.py" "$wallpaper"
+    local workspaces monitor ws backdrop
+    workspaces="$(xfconf-query -c xfwm4 -p /general/workspace_count 2>/dev/null || echo 1)"
+    while read -r backdrop; do
+        xfset xfce4-desktop "$backdrop/last-image" string "$wallpaper"
+        xfset xfce4-desktop "$backdrop/image-style" int 5   # zoomed
+    done < <({
+        xfconf-query -c xfce4-desktop -l 2>/dev/null | sed -n 's#/last-image$##p'
+        for monitor in $(xrandr --listmonitors 2>/dev/null | awk 'NR > 1 { print $NF }'); do
+            for ((ws = 0; ws < workspaces; ws++)); do
+                echo "/backdrop/screen0/monitor$monitor/workspace$ws"
+            done
+        done
+    } | sort -u)
+
     # xfce4-terminal gets the same scheme and look as the Windows Terminal WSL profile
     local key value
     while read -r key value; do
