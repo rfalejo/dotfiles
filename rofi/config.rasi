@@ -1,0 +1,118 @@
+/* rofi launcher: darkened Solarized, matching tmux and the XFCE theme */
+
+configuration {
+    modi: "drun,run,window";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    font: "Noto Sans 11";
+    display-drun: "apps";
+    display-run: "run";
+    display-window: "windows";
+    drun-display-format: "{name}";
+    matching: "fuzzy";
+}
+
+@theme "/dev/null"   /* start from a blank theme, not rofi's default */
+
+* {
+    bg: #070d15;
+    bg-alt: #0f1b29;
+    fg: #93a1a1;
+    fg-dim: #586e75;
+    accent: #268bd2;
+    urgent: #dc322f;
+
+    background-color: transparent;
+    text-color: @fg;
+}
+
+window {
+    width: 640px;
+    background-color: @bg;
+    border: 1px;
+    border-color: @bg-alt;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+mainbox {
+    spacing: 12px;
+    children: [inputbar, message, listview, mode-switcher];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius: 6px;
+    padding: 10px 12px;
+    spacing: 10px;
+    children: [prompt, entry];
+}
+
+prompt {
+    text-color: @accent;
+}
+
+entry {
+    placeholder: "Search";
+    placeholder-color: @fg-dim;
+    cursor: text;
+}
+
+message {
+    background-color: @bg-alt;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+listview {
+    lines: 8;
+    spacing: 4px;
+    fixed-height: true;
+    scrollbar: false;
+}
+
+element {
+    padding: 8px 10px;
+    border-radius: 6px;
+    spacing: 12px;
+}
+
+element normal.normal, element alternate.normal {
+    background-color: transparent;
+    text-color: @fg;
+}
+
+element selected.normal {
+    background-color: @accent;
+    text-color: @bg;
+}
+
+element normal.urgent, element alternate.urgent {
+    text-color: @urgent;
+}
+
+element-icon {
+    size: 24px;
+    text-color: inherit;
+}
+
+element-text {
+    text-color: inherit;
+    vertical-align: 0.5;
+}
+
+mode-switcher {
+    spacing: 8px;
+}
+
+button {
+    padding: 6px;
+    border-radius: 6px;
+    background-color: @bg-alt;
+    text-color: @fg-dim;
+}
+
+button selected {
+    background-color: @accent;
+    text-color: @bg;
+}

@@ -10,7 +10,7 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 PACKAGES=(tmux fzf bat eza zoxide tree jq git vim)
 LINUX_DESKTOP_PACKAGES=(wl-clipboard xclip xdg-utils)
-XFCE_PACKAGES=(greybird-gtk-theme papirus-icon-theme fonts-cascadia-code python3-pil)
+XFCE_PACKAGES=(greybird-gtk-theme papirus-icon-theme fonts-cascadia-code python3-pil rofi)
 XFCE_THEME=Greybird-Solarized-Dark
 
 print_usage() {
@@ -24,6 +24,7 @@ Options:
                       and the XFCE theme dependencies on XFCE)
   --windows-terminal  Also add the Solarized scheme to Windows Terminal and apply it to this distro
   --xfce              Also build and apply the Solarized Dark XFCE theme and terminal colors
+  --login-screen      Also theme the LightDM GTK greeter to match (uses sudo)
   --all               Everything above
   -h, --help          Show this message
 EOF
@@ -254,19 +255,93 @@ EOF
     else
         log_warn "Cascadia Mono not installed (see --packages); keeping the current terminal font"
     fi
+    xfset xfce4-terminal /misc-menubar-default bool false          # right-click still opens the menu
+    xfset xfce4-terminal /scrolling-bar string TERMINAL_SCROLLBAR_NONE
+
+    # Clean desktop, and a panel clock formatted like the tmux one
+    xfset xfce4-desktop /desktop-icons/style int 0
+    local clock
+    for clock in $(xfconf-query -c xfce4-panel -lv | awk '$2 == "clock" { print $1 }'); do
+        xfset xfce4-panel "$clock/digital-layout" int 3
+        xfset xfce4-panel "$clock/digital-time-format" string "%a %d %b  %H:%M"
+    done
+
+    link gtk/gtk-4.0.css "$HOME/.config/gtk-4.0/gtk.css"
+    link rofi/config.rasi "$HOME/.config/rofi/config.rasi"
+    if command -v rofi >/dev/null; then
+        xfset xfce4-keyboard-shortcuts "/commands/custom/<Super>r" string "rofi -show drun"
+        xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r/startup-notify" -r 2>/dev/null || true
+    else
+        log_warn "rofi not installed (see --packages); keeping the Super+R run dialog"
+    fi
 
     log_info "Applied $XFCE_THEME to XFCE and xfce4-terminal"
 }
 
+# Login screen: the greeter runs as the lightdm user, so the theme and wallpaper are
+# copied system-wide and set in /etc/lightdm/lightdm-gtk-greeter.conf (needs sudo)
+configure_login_screen() {
+    local conf=/etc/lightdm/lightdm-gtk-greeter.conf
+    local theme="$HOME/.local/share/themes/$XFCE_THEME"
+    local wallpaper="$HOME/.local/share/backgrounds/solarized-dusk.png"
+
+    if [ ! -f "$conf" ]; then
+        log_warn "$conf not found (not using lightdm-gtk-greeter?); skipping login screen"
+        return
+    fi
+    [ -d "$theme" ] || python3 "$DOTFILES_DIR/xfce/solarize-theme.py" "$theme"
+    [ -f "$wallpaper" ] || python3 "$DOTFILES_DIR/xfce/wallpaper.py" "$wallpaper"
+
+    sudo rm -rf "/usr/share/themes/$XFCE_THEME"
+    sudo cp -r "$theme" "/usr/share/themes/$XFCE_THEME"
+    sudo install -D -m 644 "$wallpaper" /usr/share/backgrounds/solarized-dusk.png
+    sudo cp "$conf" "$conf.bak-$STAMP"
+    log_info "Backed up $conf"
+
+    sudo python3 - "$conf" "$XFCE_THEME" <<'EOF'
+import sys
+
+path, theme = sys.argv[1:]
+settings = {
+    "theme-name": theme,
+    "icon-theme-name": "Papirus-Dark",
+    "background": "/usr/share/backgrounds/solarized-dusk.png",
+    "user-background": "false",
+    "font-name": "Noto Sans 10",
+    "clock-format": "%a %d %b  %H:%M",
+}
+
+lines = open(path).read().splitlines()
+if not any(line.strip() == "[greeter]" for line in lines):
+    lines.append("[greeter]")
+section = None
+for i, line in enumerate(lines):
+    if line.startswith("["):
+        section = line.strip()
+        continue
+    key = line.split("=", 1)[0].strip()
+    if section == "[greeter]" and "=" in line and key in settings:
+        lines[i] = f"{key}={settings.pop(key)}"
+start = next(i for i, line in enumerate(lines) if line.strip() == "[greeter]")
+end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("[")), len(lines))
+lines[end:end] = [f"{key}={value}" for key, value in settings.items()]
+
+with open(path, "w") as f:
+    f.write("\n".join(lines) + "\n")
+EOF
+    log_info "Applied $XFCE_THEME and the dusk wallpaper to the login screen"
+}
+
 main() {
-    local packages=false windows_terminal=false xfce=false
+    local packages=false windows_terminal=false xfce=false login_screen=false
 
     while [ $# -gt 0 ]; do
         case "$1" in
             --packages) packages=true ;;
             --windows-terminal) windows_terminal=true ;;
             --xfce) xfce=true ;;
-            --all) packages=true; windows_terminal=true; xfce=true ;;
+            --login-screen) login_screen=true ;;
+            --all) packages=true; windows_terminal=true; xfce=true; login_screen=true ;;
             -h|--help) print_usage; exit 0 ;;
             *) print_usage; exit 1 ;;
         esac
@@ -279,6 +354,7 @@ main() {
     configure_claude
     $windows_terminal && configure_windows_terminal
     $xfce && configure_xfce
+    $login_screen && configure_login_screen
 
     log_info "Done. Open a new shell (or run: exec bash -l)."
 }

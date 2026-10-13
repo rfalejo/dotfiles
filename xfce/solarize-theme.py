@@ -197,6 +197,14 @@ NOTIFY_CSS = f"""\
 }}
 """
 
+# Appended to gtk-3.0/gtk.css after recoloring
+EXTRA_CSS = """
+/* dotfiles additions */
+vte-terminal {
+    padding: 8px;   /* same as the Windows Terminal profiles */
+}
+"""
+
 INDEX_THEME = f"""\
 [Desktop Entry]
 Type=X-GNOME-Metatheme
@@ -232,6 +240,9 @@ def build(out, source):
             recolor_png(path)
         elif path.suffix in (".css", ".svg", ".xpm", ".rc") or path.name in ("gtkrc", "themerc"):
             path.write_text(recolor_text(path.read_text(), css=path.suffix == ".css"))
+
+    with open(out / "gtk-3.0" / "gtk.css", "a") as f:
+        f.write(EXTRA_CSS)
 
     notify = out / "xfce-notify-4.0"
     notify.mkdir()

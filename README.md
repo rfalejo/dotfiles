@@ -43,9 +43,10 @@ git clone https://github.com/rfalejo/dotfiles.git ~/.dotfiles
 | Flag | Does |
 | --- | --- |
 | *(none)* | Symlinks configs, hooks `rice.sh` into `~/.bashrc`, sets the Claude Code `statusLine` |
-| `--packages` | Installs shell tools with apt; on standalone Linux, also installs `wl-clipboard`, `xclip`, and `xdg-utils`; on XFCE, also the theme dependencies (`greybird-gtk-theme`, `papirus-icon-theme`, `fonts-cascadia-code`, `python3-pil`) |
+| `--packages` | Installs shell tools with apt; on standalone Linux, also installs `wl-clipboard`, `xclip`, and `xdg-utils`; on XFCE, also the theme dependencies (`greybird-gtk-theme`, `papirus-icon-theme`, `fonts-cascadia-code`, `python3-pil`, `rofi`) |
 | `--windows-terminal` | On WSL, adds the *Solarized Dark (WSL)* scheme and applies it to the current distro's profile |
-| `--xfce` | On XFCE, builds the *Greybird-Solarized-Dark* theme and applies it with matching icons, notifications, wallpaper, and xfce4-terminal colors |
+| `--xfce` | On XFCE, builds the *Greybird-Solarized-Dark* theme and applies it with matching icons, notifications, wallpaper, rofi, and xfce4-terminal colors |
+| `--login-screen` | Copies the theme and wallpaper system-wide and applies them to the LightDM GTK greeter (uses sudo; backs up `lightdm-gtk-greeter.conf` to `*.bak-<timestamp>`) |
 | `--all` | All applicable steps for the current host |
 
 Anything already at a target path is moved to `*.pre-dotfiles.<timestamp>`; Windows Terminal's `settings.json` is backed up to `settings.json.bak-<timestamp>`; `--xfce` copies `~/.config/xfce4/xfconf/xfce-perchannel-xml` to `*.pre-dotfiles.<timestamp>` before changing settings. Configs are symlinked, so edits in place land in the repo.
@@ -73,6 +74,8 @@ On a headless Linux host, the shell and tmux setup still work; tmux keeps copied
 | `windows-terminal/minimal-mocha-powershell.json` | merged into WT `settings.json` | Native Windows color scheme + profile look |
 | `xfce/solarize-theme.py` | generates `~/.local/share/themes/Greybird-Solarized-Dark` | Recolors Greybird-dark to Solarized Dark |
 | `xfce/wallpaper.py` | generates `~/.local/share/backgrounds/solarized-dusk.png` | Solarized dusk wallpaper (3840×2160) |
+| `rofi/config.rasi` | `~/.config/rofi/config.rasi` | Solarized rofi launcher (with `--xfce`) |
+| `gtk/gtk-4.0.css` | `~/.config/gtk-4.0/gtk.css` | GTK 4 / libadwaita colors (with `--xfce`) |
 
 ## Highlights
 
@@ -98,6 +101,6 @@ Also: mouse, 1-based numbering, `escape-time 10`, extended keys (Shift+Enter), t
 
 **Windows Terminal** — *Solarized Dark (WSL)*: Solarized accents and text on near-black blue backgrounds (`#070D15`, with `#0F1B29` for selection and ANSI black in place of base03/base02), bright black as base01 (readable dim text), bright red/magenta as orange/violet, and `intenseTextStyle: bold` so bold text keeps its color. Cascadia Mono 11, bar cursor, full opacity, no bell indicators.
 
-**XFCE** — *Greybird-Solarized-Dark* is generated from the installed Greybird-dark rather than vendored: its greys map onto the Solarized base ramp (views base03, windows and panel base02, text base1) and its accents onto Solarized blue, red, green, and orange. CSS, gtkrc, SVG, XPM, and PNG assets all go through the same mapping, so GTK 2/3 widgets, the panel, xfwm4 window decorations, and notifications match tmux. Also sets the flat, minimal Papirus-Dark icons, `prefer-dark` for GTK 4/libadwaita apps, and gives xfce4-terminal the Windows Terminal scheme (read from `windows-terminal/solarized-dark-wsl.json`), Cascadia Mono 11, and a bar cursor. The wallpaper, a striped Solarized sun setting behind layered ridges, is rendered by `xfce/wallpaper.py` (seeded, so it's the same every run) and set on every monitor and workspace. Rerun `--xfce` after Greybird updates to rebuild. To revert, pick another theme in *Appearance* and *Window Manager*.
+**XFCE** — *Greybird-Solarized-Dark* is generated from the installed Greybird-dark rather than vendored: its greys map onto the Solarized base ramp (views base03, windows and panel base02, text base1) and its accents onto Solarized blue, red, green, and orange. CSS, gtkrc, SVG, XPM, and PNG assets all go through the same mapping, so GTK 2/3 widgets, the panel, xfwm4 window decorations, and notifications match tmux. Also sets the flat, minimal Papirus-Dark icons, `prefer-dark` for GTK 4/libadwaita apps, and gives xfce4-terminal the Windows Terminal scheme (read from `windows-terminal/solarized-dark-wsl.json`), Cascadia Mono 11, and a bar cursor. The wallpaper, a striped Solarized sun setting behind layered ridges, is rendered by `xfce/wallpaper.py` (seeded, so it's the same every run) and set on every monitor and workspace. Also: no desktop icons, a panel clock formatted like tmux (`%a %d %b  %H:%M`), a menubar- and scrollbar-free xfce4-terminal with 8px padding, the same colors for GTK 4/libadwaita apps, and a themed rofi launcher on `Super+R` (`apps`/`run`/`windows`; Super alone still opens the Whisker menu). `--login-screen` gives the LightDM greeter the same theme, icons, wallpaper and clock. Rerun `--xfce` after Greybird updates to rebuild. To revert, pick another theme in *Appearance* and *Window Manager*.
 
 **Claude Code status line** — `user@host:~/dir (branch)  Model`; drops `user@host` inside tmux since the tmux bar already shows it.

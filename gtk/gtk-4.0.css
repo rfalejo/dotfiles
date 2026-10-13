@@ -1,0 +1,35 @@
+/* GTK 4 / libadwaita colors: darkened Solarized, matching the generated XFCE theme */
+
+@define-color accent_color #268bd2;
+@define-color accent_bg_color #268bd2;
+@define-color accent_fg_color #070d15;
+
+@define-color destructive_color #dc322f;
+@define-color destructive_bg_color #dc322f;
+@define-color destructive_fg_color #070d15;
+@define-color success_color #859900;
+@define-color warning_color #b58900;
+@define-color error_color #dc322f;
+
+@define-color window_bg_color #0f1b29;
+@define-color window_fg_color #93a1a1;
+@define-color view_bg_color #070d15;
+@define-color view_fg_color #93a1a1;
+
+@define-color headerbar_bg_color #0f1b29;
+@define-color headerbar_fg_color #93a1a1;
+@define-color headerbar_backdrop_color #0f1b29;
+@define-color headerbar_border_color #93a1a1;
+@define-color headerbar_shade_color rgba(0, 0, 0, 0.36);
+
+@define-color sidebar_bg_color #0b1520;
+@define-color sidebar_fg_color #93a1a1;
+@define-color sidebar_backdrop_color #0b1520;
+@define-color sidebar_shade_color rgba(0, 0, 0, 0.36);
+
+@define-color card_bg_color rgba(147, 161, 161, 0.05);
+@define-color card_fg_color #93a1a1;
+@define-color dialog_bg_color #0f1b29;
+@define-color dialog_fg_color #93a1a1;
+@define-color popover_bg_color #0f1b29;
+@define-color popover_fg_color #93a1a1;
