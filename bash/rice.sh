@@ -71,7 +71,7 @@ __rice_prompt() {
   local status=$?
   history -a
 
-  local c=$SOL_RESET line1="" branch=""
+  local c=$SOL_RESET line1=""
   local w="\[" e="\]"   # non-printing wrappers
 
   # user@host: quiet grey locally, yellow over SSH
@@ -85,12 +85,14 @@ __rice_prompt() {
   # Git: skip dirty-state checks on /mnt/* (Windows filesystem is slow over 9P)
   if declare -F __git_ps1 >/dev/null; then
     if [[ $PWD == /mnt/* ]]; then GIT_PS1_SHOWDIRTYSTATE=; else GIT_PS1_SHOWDIRTYSTATE=1; fi
-    branch=$(__git_ps1 '%s')
-    [[ -n $branch ]] && line1+="  ${w}${SOL_VIOLET}${e}${branch}${w}${c}${e}"
+    __rice_branch=$(__git_ps1 '%s')
+    # Referenced as variables so bash never expands $(...) inside a branch or env name
+    [[ -n $__rice_branch ]] && line1+="  ${w}${SOL_VIOLET}${e}"'${__rice_branch}'"${w}${c}${e}"
   fi
 
-  [[ -n $VIRTUAL_ENV ]] && line1+="  ${w}${SOL_CYAN}${e}(${VIRTUAL_ENV##*/})${w}${c}${e}"
-  [[ -n $CONDA_DEFAULT_ENV && $CONDA_DEFAULT_ENV != base ]] && line1+="  ${w}${SOL_CYAN}${e}(${CONDA_DEFAULT_ENV})${w}${c}${e}"
+  __rice_venv=${VIRTUAL_ENV##*/}
+  [[ -n $VIRTUAL_ENV ]] && line1+="  ${w}${SOL_CYAN}${e}"'(${__rice_venv})'"${w}${c}${e}"
+  [[ -n $CONDA_DEFAULT_ENV && $CONDA_DEFAULT_ENV != base ]] && line1+="  ${w}${SOL_CYAN}${e}"'(${CONDA_DEFAULT_ENV})'"${w}${c}${e}"
 
   if [[ -n $__rice_t0 ]]; then
     local dt=$((SECONDS - __rice_t0))
