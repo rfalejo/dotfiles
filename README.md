@@ -1,6 +1,6 @@
 # dotfiles
 
-Dark shell setup for **Linux, WSL, and native Windows PowerShell**, with Claude Code integration. Linux/WSL uses Solarized Dark and includes tmux; native Windows uses Minimal Mocha. Windows Terminal theming is available for WSL and PowerShell.
+Dark shell setup for **Linux, WSL, and native Windows PowerShell**, with Claude Code integration. Linux/WSL uses Solarized Dark (with near-black blue backgrounds) and includes tmux; native Windows uses Minimal Mocha. Windows Terminal theming is available for WSL and PowerShell.
 
 ```
 ╭─ user@host  ~/src/project  main *%  (venv)  1m15s  ✘ 1
@@ -31,7 +31,7 @@ Open a new PowerShell tab after installing, or run `. $PROFILE.CurrentUserAllHos
 
 PowerShell includes the two-line Minimal Mocha prompt with Git branch/dirty state, virtualenv, command duration and failure status; Windows Terminal directory reporting; shared PSReadLine history, prefix search on ↑/↓, and menu completion on Tab. Helpers include `g`, `gs`, `gd`, `gl`, `ga`, `gcommit`, `gp`, `ll`, `la`, `..`, `...`, `e`, `open`, `winhome`, `pbcopy`, `pbpaste`, and `reload`. Native PowerShell aliases such as `gc`, `ls`, `cat`, and `copy` keep their standard meanings. When installed, eza enhances `ll`/`la` and adds `lt`, zoxide provides `z`/`zi`, and fzf powers Ctrl+R history selection. `bat` uses OneHalfDark. tmux remains a Linux/WSL tool.
 
-The Windows theme uses a dark charcoal background (`#1E1E2E`), pale text, and soft blue, purple, and green accents. Prompt and fzf colors match the Terminal palette. Windows profiles are fully opaque, with acrylic and bell indicators disabled.
+The Windows theme uses a near-black blue background (`#070D15`), pale text, and soft blue, purple, and green accents. Prompt and fzf colors match the Terminal palette. Windows profiles are fully opaque, with acrylic and bell indicators disabled.
 
 ### Linux / WSL
 
@@ -93,6 +93,6 @@ On a headless Linux host, the shell and tmux setup still work; tmux keeps copied
 
 Also: mouse, 1-based numbering, `escape-time 10`, extended keys (Shift+Enter), truecolor, OSC passthrough. Copy mode sends text to the Windows, Wayland, or X11 clipboard when available. `t` in bash attaches to (or creates) session `main`.
 
-**Windows Terminal** — *Solarized Dark (WSL)*: canonical Solarized with bright black as base01 (readable dim text), bright red/magenta as orange/violet, and `intenseTextStyle: bold` so bold text keeps its color. Cascadia Mono 11, bar cursor, full opacity, no bell indicators.
+**Windows Terminal** — *Solarized Dark (WSL)*: Solarized accents and text on near-black blue backgrounds (`#070D15`, with `#0F1B29` for selection and ANSI black in place of base03/base02), bright black as base01 (readable dim text), bright red/magenta as orange/violet, and `intenseTextStyle: bold` so bold text keeps its color. Cascadia Mono 11, bar cursor, full opacity, no bell indicators.
 
 **Claude Code status line** — `user@host:~/dir (branch)  Model`; drops `user@host` inside tmux since the tmux bar already shows it.

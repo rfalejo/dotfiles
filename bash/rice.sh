@@ -39,7 +39,7 @@ export LESS_TERMCAP_md="${SOL_BOLD}${SOL_BLUE}"      # bold → headings
 export LESS_TERMCAP_me="$SOL_RESET"
 export LESS_TERMCAP_us="${SOL_GREEN}"                 # underline → args
 export LESS_TERMCAP_ue="$SOL_RESET"
-export LESS_TERMCAP_so=$'\033[48;2;7;54;66m'"$SOL_YELLOW"  # standout → status/search
+export LESS_TERMCAP_so=$'\033[48;2;15;27;41m'"$SOL_YELLOW"  # standout → status/search
 export LESS_TERMCAP_se="$SOL_RESET"
 
 # ── Prompt ────────────────────────────────────────────────────────
@@ -213,7 +213,7 @@ fi
 
 if command -v fzf >/dev/null; then
   export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border=rounded --info=inline
-    --color=bg+:#073642,bg:-1,spinner:#2aa198,hl:#268bd2
+    --color=bg+:#0f1b29,bg:-1,spinner:#2aa198,hl:#268bd2
     --color=fg:#839496,header:#268bd2,info:#b58900,pointer:#2aa198
     --color=marker:#2aa198,fg+:#eee8d5,prompt:#b58900,hl+:#268bd2,border:#586e75"
   if fzf --bash >/dev/null 2>&1; then

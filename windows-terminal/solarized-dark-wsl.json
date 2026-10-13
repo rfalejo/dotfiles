@@ -1,11 +1,11 @@
 {
     "scheme": {
         "name": "Solarized Dark (WSL)",
-        "background": "#002B36",
+        "background": "#070D15",
         "foreground": "#839496",
         "cursorColor": "#93A1A1",
-        "selectionBackground": "#073642",
-        "black": "#073642",
+        "selectionBackground": "#0F1B29",
+        "black": "#0F1B29",
         "red": "#DC322F",
         "green": "#859900",
         "yellow": "#B58900",
