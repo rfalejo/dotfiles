@@ -2,7 +2,7 @@
 
 # Dotfiles installer
 # Symlinks configs into place, hooks the bash setup into ~/.bashrc and wires up
-# the Claude Code status line. Optional flags install packages and theme Windows Terminal.
+# the Claude Code status line. Optional flags install packages and theme Windows Terminal or XFCE.
 
 set -euo pipefail
 
@@ -10,6 +10,8 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 PACKAGES=(tmux fzf bat eza zoxide tree jq git vim)
 LINUX_DESKTOP_PACKAGES=(wl-clipboard xclip xdg-utils)
+XFCE_PACKAGES=(greybird-gtk-theme papirus-icon-theme fonts-cascadia-code python3-pil)
+XFCE_THEME=Greybird-Solarized-Dark
 
 print_usage() {
     cat <<EOF
@@ -18,8 +20,10 @@ Usage: $0 [options]
 With no options, links configs and updates ~/.bashrc and Claude Code settings.
 
 Options:
-  --packages          Also apt-install: ${PACKAGES[*]} (plus Linux desktop clipboard tools)
+  --packages          Also apt-install: ${PACKAGES[*]} (plus Linux desktop clipboard tools,
+                      and the XFCE theme dependencies on XFCE)
   --windows-terminal  Also add the Solarized scheme to Windows Terminal and apply it to this distro
+  --xfce              Also build and apply the Solarized Dark XFCE theme and terminal colors
   --all               Everything above
   -h, --help          Show this message
 EOF
@@ -106,6 +110,9 @@ install_packages() {
     if [ -z "${WSL_DISTRO_NAME:-}" ]; then
         packages+=("${LINUX_DESKTOP_PACKAGES[@]}")
     fi
+    if command -v xfconf-query >/dev/null; then
+        packages+=("${XFCE_PACKAGES[@]}")
+    fi
     log_info "Installing packages: ${packages[*]}"
     sudo apt-get update -qq
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "${packages[@]}"
@@ -169,14 +176,80 @@ print(f"[INFO] Windows Terminal: {'themed profile ' + distro if matched else 'ad
 EOF
 }
 
+# xfset <channel> <property> <type> <value>: create or update an xfconf property
+xfset() {
+    xfconf-query -c "$1" -p "$2" -n -t "$3" -s "$4"
+}
+
+configure_xfce() {
+    if ! command -v xfconf-query >/dev/null; then
+        log_warn "xfconf-query not found (not an XFCE desktop?); skipping XFCE"
+        return
+    fi
+
+    local xfconf_dir="$HOME/.config/xfce4/xfconf/xfce-perchannel-xml"
+    if [ -d "$xfconf_dir" ]; then
+        cp -a "$xfconf_dir" "$xfconf_dir.pre-dotfiles.$STAMP"
+        log_info "Backed up $xfconf_dir -> $xfconf_dir.pre-dotfiles.$STAMP"
+    fi
+
+    python3 "$DOTFILES_DIR/xfce/solarize-theme.py" "$HOME/.local/share/themes/$XFCE_THEME"
+
+    xfset xsettings /Net/ThemeName string "$XFCE_THEME"
+    xfset xfwm4 /general/theme string "$XFCE_THEME"
+    xfset xfce4-notifyd /theme string "$XFCE_THEME"
+    if [ -d /usr/share/icons/Papirus-Dark ]; then
+        xfset xsettings /Net/IconThemeName string Papirus-Dark
+    fi
+    if command -v gsettings >/dev/null; then
+        gsettings set org.gnome.desktop.interface color-scheme prefer-dark 2>/dev/null || true
+    fi
+
+    # xfce4-terminal gets the same scheme and look as the Windows Terminal WSL profile
+    local key value
+    while read -r key value; do
+        xfset xfce4-terminal "/$key" string "$value"
+    done < <(python3 - "$DOTFILES_DIR/windows-terminal/solarized-dark-wsl.json" <<'EOF'
+import json, sys
+
+with open(sys.argv[1]) as f:
+    scheme = json.load(f)["scheme"]
+
+names = ["black", "red", "green", "yellow", "blue", "purple", "cyan", "white"]
+palette = [scheme[n] for n in names] + [scheme["bright" + n.capitalize()] for n in names]
+print("color-background", scheme["background"].lower())
+print("color-foreground", scheme["foreground"].lower())
+print("color-cursor", scheme["cursorColor"].lower())
+print("color-selection", scheme["selectionBackground"].lower())
+print("color-palette", ";".join(palette).lower())
+EOF
+)
+    xfset xfce4-terminal /color-cursor-use-default bool false
+    xfset xfce4-terminal /color-selection-use-default bool false
+    xfset xfce4-terminal /color-bold-use-default bool true
+    xfset xfce4-terminal /color-bold-is-bright bool false
+    xfset xfce4-terminal /tab-activity-color string "#cb4b16"
+    xfset xfce4-terminal /misc-cursor-shape string TERMINAL_CURSOR_SHAPE_IBEAM
+    if [ -n "$(fc-list "Cascadia Mono" family)" ]; then
+        xfset xfce4-terminal /font-use-system bool false
+        xfset xfce4-terminal /font-name string "Cascadia Mono 11"
+        xfset xsettings /Gtk/MonospaceFontName string "Cascadia Mono 10"
+    else
+        log_warn "Cascadia Mono not installed (see --packages); keeping the current terminal font"
+    fi
+
+    log_info "Applied $XFCE_THEME to XFCE and xfce4-terminal"
+}
+
 main() {
-    local packages=false windows_terminal=false
+    local packages=false windows_terminal=false xfce=false
 
     while [ $# -gt 0 ]; do
         case "$1" in
             --packages) packages=true ;;
             --windows-terminal) windows_terminal=true ;;
-            --all) packages=true; windows_terminal=true ;;
+            --xfce) xfce=true ;;
+            --all) packages=true; windows_terminal=true; xfce=true ;;
             -h|--help) print_usage; exit 0 ;;
             *) print_usage; exit 1 ;;
         esac
@@ -188,6 +261,7 @@ main() {
     hook_bashrc
     configure_claude
     $windows_terminal && configure_windows_terminal
+    $xfce && configure_xfce
 
     log_info "Done. Open a new shell (or run: exec bash -l)."
 }
